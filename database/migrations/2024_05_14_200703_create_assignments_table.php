@@ -16,7 +16,9 @@ return new class extends Migration
             $table->foreignId('instance_id')->constrained('item_instances');
             $table->foreignId('assigned_by')->constrained('users');
             $table->foreignId('assigned_to')->constrained('users');
-            $table->foreignId('previous_id')->nullable()->constrained('assignments');
+            $table->timestamp('returned')->nullable();
+//            TODO: Track previous assignments
+//            $table->foreignId('previous_id')->nullable()->constrained('assignments');
             $table->string('release_method');
             $table->timestamps();
         });

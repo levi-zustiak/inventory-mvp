@@ -15,6 +15,7 @@ class Assignment extends Model
         'assigned_to',
         'previous_id',
         'release_method',
+        'active'
     ];
 
     public function instance(): BelongsTo
