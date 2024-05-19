@@ -1,12 +1,11 @@
 <script setup>
-import {ref, reactive, watch} from 'vue';
+import {ref, reactive, watch, toRaw} from 'vue';
     import { router } from "@inertiajs/vue3";
     import ItemField from "./components/ItemField.vue";
 
-    const { company, campaign } = defineProps({ company: Object, campaign: Object });
+    const { company, campaign } = defineProps({ company: Object, campaign: Object, staff: Array });
 
     const selecting = ref(false);
-    const selected = ref(new Set());
     const assignDialogRef = ref();
     const createDialogRef = ref();
     const form = reactive({
@@ -16,38 +15,34 @@ import {ref, reactive, watch} from 'vue';
     })
 
     const assignForm = reactive({
-        items: [...selected.value.values()],
-    })
-
-    // console.log([...selected.value.values()], assignForm)
-
-    watch(selected, async (newSelected, oldSelected) => {
-        console.log([...newSelected.values()], [...oldSelected.values()])
+        assigned_to: null,
+        items: [],
     })
 
     function select(item) {
-        selected.value.add(item)
-        // if (selected.value.some((selectedItem) => selectedItem.id === item.id)) return
-        //
-        // selected.value.push(item)
+        if (assignForm.items.some((selected) => selected.id === item.id)) {
+            return
+        }
+        assignForm.items.push(structuredClone(toRaw(item)))
     }
 
     function cancel() {
         selecting.value = false;
-        // selected.clear();
-        selected.value.clear();
+        // selected.value = [];
+        assignForm.items = [];
     }
 
     function submitAssignments() {
-        console.log(assignForm)
+        router.post(`/companies/${company.id}/campaigns/${campaign.id}/assignments`, assignForm);
+        assignDialogRef.value.close()
     }
 
     function submit() {
-        console.log('submitting')
         router.post(`/companies/${company.id}/campaigns/${campaign.id}/items`, form);
+        createDialogRef.value.close()
     }
 
-
+    console.log(campaign);
 </script>
 
 <template>
@@ -59,7 +54,7 @@ import {ref, reactive, watch} from 'vue';
         <div v-if="campaign.items.length > 0" v-for="item in campaign.items" class="item-card">
             <h4>{{ item.name }}</h4>
             <p>{{ item.description }}</p>
-            <p>Qty: {{ item.quantity }}</p>
+            <p>Qty: {{ item.available_quantity }}</p>
             <button v-if="selecting" @click="select(item)">Select</button>
         </div>
         <p v-else>No items</p>
@@ -67,12 +62,14 @@ import {ref, reactive, watch} from 'vue';
     <button v-if="selecting" @click="assignDialogRef.showModal">Assign Items</button>
     <dialog ref="assignDialogRef" @close="assignDialogRef.close" class="modal">
         <h2>Assign Items</h2>
-        <p>{{ selected.size }}</p>
-        <form @submit.prevent="submitAssignments" v-if="selected.size > 0">
+        <form @submit.prevent="submitAssignments" v-if="assignForm.items.length > 0">
+            <select v-model="assignForm.assigned_to">
+                <option v-for="user in staff" :value="user.id">{{ user.name }}</option>
+            </select>
             <item-field
-                v-for="(selectedItem, idx) in selected.values()"
+                v-for="(selectedItem, idx) in assignForm.items"
                 :item="selectedItem"
-                v-model="assignForm.items[idx]"
+                v-model="assignForm.items[idx].quantity"
             />
             <button type="submit">Assign</button>
         </form>
@@ -93,7 +90,7 @@ import {ref, reactive, watch} from 'vue';
         </form>
     </dialog>
 
-    <p>{{ JSON.stringify([...selected.values()], null, 2) }}</p>
+    <pre>{{ JSON.stringify([...assignForm.items], null, 2) }}</pre>
 </template>
 
 <style scoped>
@@ -110,6 +107,7 @@ import {ref, reactive, watch} from 'vue';
 
 .modal {
     margin: auto;
+    padding: 1rem;
     border: 1px solid black;
 }
 </style>

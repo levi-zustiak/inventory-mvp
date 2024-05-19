@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('assignments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('instance_id')->constrained('item_instances');
-            $table->foreignId('assigned_by')->constrained('users');
+            $table->foreignId('item_id')->constrained();
             $table->foreignId('assigned_to')->constrained('users');
-            $table->timestamp('returned')->nullable();
+            $table->foreignId('assigned_by')->constrained('users');
+            $table->integer('quantity');
+            $table->timestamp('returned_at')->nullable();
 //            TODO: Track previous assignments
 //            $table->foreignId('previous_id')->nullable()->constrained('assignments');
-            $table->string('release_method');
+//            $table->string('release_method');
             $table->timestamps();
         });
     }

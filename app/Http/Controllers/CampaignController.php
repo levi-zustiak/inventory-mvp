@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Campaign;
 use App\Models\Company;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -21,6 +22,8 @@ class CampaignController extends Controller
         return Inertia::render('Company/Campaign/Show', [
             'company' => $company,
             'campaign' => $campaign->load('items'),
+//            'campaign' => $campaign->load(['items' => fn ($q) => $q->withCount(['availableInstances as quantity'])]),
+            'staff' => User::all(),
         ]);
     }
 }

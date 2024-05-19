@@ -13,13 +13,12 @@ class Assignment extends Model
     protected $fillable = [
         'assigned_by',
         'assigned_to',
-        'previous_id',
-        'release_method',
-        'active'
+        'quantity',
+        'returned_at',
     ];
 
-    public function instance(): BelongsTo
+    public function item(): BelongsTo
     {
-        return $this->belongsTo(ItemInstance::class, 'id', 'instance_id');
+        return $this->belongsTo(Item::class);
     }
 }

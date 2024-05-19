@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ItemInstance extends Model
 {
@@ -14,8 +15,8 @@ class ItemInstance extends Model
         'item_id',
     ];
 
-    public function assignments(): HasMany
+    public function assignment(): HasOne
     {
-        return $this->hasMany(Assignment::class, 'instance_id');
+        return $this->hasOne(Assignment::class, 'instance_id');
     }
 }

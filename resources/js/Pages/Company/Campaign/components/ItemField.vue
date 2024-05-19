@@ -6,8 +6,7 @@ console.log(item)
 
 <template>
     <div>
-<!--        <label for=""-->
-        <h3>{{ item.name }}</h3>
-        <input v-model="model" type="number"/>
+        <label>{{ item.name }}</label>
+        <input v-model="model" type="number" :max="item.available_quantity" min="1"/>
     </div>
 </template>
