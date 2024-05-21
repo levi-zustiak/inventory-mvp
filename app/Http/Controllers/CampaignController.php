@@ -21,7 +21,7 @@ class CampaignController extends Controller
     {
         return Inertia::render('Company/Campaign/Show', [
             'company' => $company,
-            'campaign' => $campaign->load('items'),
+            'campaign' => $campaign->load(['items', 'supplies']),
 //            'campaign' => $campaign->load(['items' => fn ($q) => $q->withCount(['availableInstances as quantity'])]),
             'staff' => User::all(),
         ]);

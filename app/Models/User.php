@@ -58,6 +58,11 @@ class User extends Authenticatable
         return $this->hasMany(Assignment::class, 'assigned_to');
     }
 
+    public function activeAssignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class, 'assigned_to')->whereNull('returned_at');
+    }
+
     public function assignedItems(): HasManyThrough
     {
         return $this->hasManyThrough(

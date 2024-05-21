@@ -6,24 +6,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Assignment extends Model
+class SupplyRequest extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'item_id',
-        'assigned_by',
-        'assigned_to',
         'quantity',
-        'returned_at',
+        'requested_by',
+        'approved_at',
     ];
 
     protected $casts = [
-        'returned_at' => 'timestamp'
+        'approved_at' => 'timestamp'
     ];
 
-    public function item(): BelongsTo
+    public function supply(): BelongsTo
     {
-        return $this->belongsTo(Item::class);
+        return $this->belongsTo('supply_id');
     }
 }

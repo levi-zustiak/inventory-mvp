@@ -22,4 +22,9 @@ class Campaign extends Model
     {
         return $this->hasMany(Item::class);
     }
+
+    public function supplies(): HasMany
+    {
+        return $this->hasMany(Supply::class);
+    }
 }

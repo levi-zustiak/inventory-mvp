@@ -1,11 +1,13 @@
 <script setup>
-import {ref, reactive, watch, toRaw} from 'vue';
+import {ref, reactive, watch, toRaw, computed} from 'vue';
     import { router } from "@inertiajs/vue3";
     import ItemField from "./components/ItemField.vue";
+import Item from "./components/Item.vue";
 
     const { company, campaign } = defineProps({ company: Object, campaign: Object, staff: Array });
 
-    const selecting = ref(false);
+    console.log(campaign);
+
     const assignDialogRef = ref();
     const createDialogRef = ref();
     const form = reactive({
@@ -19,11 +21,17 @@ import {ref, reactive, watch, toRaw} from 'vue';
         items: [],
     })
 
+    const selecting = computed(() => assignForm.items.length > 0)
+
     function select(item) {
         if (assignForm.items.some((selected) => selected.id === item.id)) {
-            return
+            assignForm.items = assignForm.items.filter((selected) => selected.id !== item.id);
+        } else {
+            const selectedItem = structuredClone(toRaw(item));
+            selectedItem.requested_quantity = selectedItem.available_quantity
+
+            assignForm.items.push(selectedItem);
         }
-        assignForm.items.push(structuredClone(toRaw(item)))
     }
 
     function cancel() {
@@ -32,35 +40,33 @@ import {ref, reactive, watch, toRaw} from 'vue';
         assignForm.items = [];
     }
 
-    function submitAssignments() {
-        router.post(`/companies/${company.id}/campaigns/${campaign.id}/assignments`, assignForm);
+    async function submitAssignments() {
+        await router.post(`/companies/${company.id}/campaigns/${campaign.id}/assignments`, assignForm);
         assignDialogRef.value.close()
+        cancel();
     }
 
     function submit() {
         router.post(`/companies/${company.id}/campaigns/${campaign.id}/items`, form);
         createDialogRef.value.close()
     }
-
-    console.log(campaign);
 </script>
 
 <template>
     <h1>{{ company.name }}</h1>
     <h1>{{ campaign.name }}</h1>
-    <button v-if="!selecting" @click="selecting = !selecting">Select</button>
-    <button v-else @click="cancel">Cancel</button>
+    <button v-if="selecting" @click="cancel">Cancel</button>
     <div class="item-container">
-        <div v-if="campaign.items.length > 0" v-for="item in campaign.items" class="item-card">
-            <h4>{{ item.name }}</h4>
-            <p>{{ item.description }}</p>
-            <p>Qty: {{ item.available_quantity }}</p>
-            <button v-if="selecting" @click="select(item)">Select</button>
-        </div>
+        <item v-if="campaign.items.length > 0"
+              v-for="item in campaign.items"
+              :item="item"
+              @click="select(item)"
+              :is-selected="assignForm.items.some((selected) => selected.id === item.id)"
+        />
         <p v-else>No items</p>
     </div>
-    <button v-if="selecting" @click="assignDialogRef.showModal">Assign Items</button>
     <dialog ref="assignDialogRef" @close="assignDialogRef.close" class="modal">
+        <div class="modal-container">
         <h2>Assign Items</h2>
         <form @submit.prevent="submitAssignments" v-if="assignForm.items.length > 0">
             <select v-model="assignForm.assigned_to">
@@ -69,15 +75,16 @@ import {ref, reactive, watch, toRaw} from 'vue';
             <item-field
                 v-for="(selectedItem, idx) in assignForm.items"
                 :item="selectedItem"
-                v-model="assignForm.items[idx].quantity"
+                v-model="assignForm.items[idx].requested_quantity"
             />
-            <button type="submit">Assign</button>
+            <button type="submit" class="full-width">Assign</button>
         </form>
+        </div>
     </dialog>
 
     <button @click="createDialogRef.showModal">Create Item</button>
     <dialog ref="createDialogRef" @close="createDialogRef.close" class="modal">
-        <button @click="createDialogRef.close">Close</button>
+        <div class="modal-container">
         <h3>Create Item</h3>
         <form @submit.prevent="submit">
             <label for="name">Name</label>
@@ -88,9 +95,13 @@ import {ref, reactive, watch, toRaw} from 'vue';
             <input id="quantity" v-model="form.quantity" type="number" />
             <button type="submit">Create</button>
         </form>
+        </div>
     </dialog>
 
-    <pre>{{ JSON.stringify([...assignForm.items], null, 2) }}</pre>
+    <div class="assign-action-container" v-if="selecting">
+        <h6>Selected items: {{ assignForm.items.length }}</h6>
+        <button @click="assignDialogRef.showModal">Assign</button>
+    </div>
 </template>
 
 <style scoped>
@@ -99,15 +110,52 @@ import {ref, reactive, watch, toRaw} from 'vue';
     gap: 1rem;
 }
 
-.item-card {
-    border: 1px solid #f1f1f1;
-    width: 300px;
-    padding: 1rem;
-}
-
 .modal {
+    border-radius: 16px;
     margin: auto;
     padding: 1rem;
-    border: 1px solid black;
+    border: none;
+}
+
+.modal-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.assign-action-container {
+    width: 360px;
+    border: 2px solid lightgrey;
+    border-radius: 10px;
+    padding: 12px;
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem
+}
+
+.full-width {
+    width: 100%;
+}
+
+button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: #282828;
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+    height: 40px;
+    font-family: 'Poppins';
+}
+
+h6 {
+    font-size: 16px;
+    font-family: 'Poppins';
+    font-weight: 600;
 }
 </style>

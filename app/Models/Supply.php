@@ -2,25 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
-class Item extends Model
+class Supply extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'name',
-        'description',
-        'quantity',
+        'link',
         'created_by',
     ];
 
-    protected $appends = ['available_quantity'];
 
     public function campaign(): BelongsTo
     {
@@ -32,22 +29,10 @@ class Item extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function assignments(): HasMany
+    public function suppliesRequests(): HasMany
     {
-        return $this->hasMany(Assignment::class);
+        return $this->hasMany(SupplyRequest::class);
     }
-
-    protected function availableQuantity(): Attribute
-    {
-        return Attribute::make(
-            get: fn () => $this->quantity - (int)$this->assignments()->whereNull('returned_at')->sum('quantity')
-        );
-    }
-
-//    public function getAvailableQuantityAttribute()
-//    {
-//        return $this->quantity - $this->assignments()->whereNotNull('returned_at')->count();
-//    }
 
     public function image(): MorphOne
     {

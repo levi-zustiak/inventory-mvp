@@ -23,3 +23,4 @@ Route::get('/companies/{company}/campaigns/{campaign}/items', [CampaignControlle
 
 Route::post('/companies/{company}/campaigns/{campaign}/items', [ItemController::class, 'store'])->scopeBindings();
 Route::post('/companies/{company}/campaigns/{campaign}/assignments', [AssignmentController::class, 'store'])->scopeBindings();
+Route::post('/assignments/{assignment}', [AssignmentController::class, 'update'])->scopeBindings();

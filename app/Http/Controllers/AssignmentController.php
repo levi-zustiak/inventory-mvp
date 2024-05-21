@@ -6,19 +6,19 @@ use App\Models\Assignment;
 use App\Models\Campaign;
 use App\Models\Company;
 use App\Models\Item;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AssignmentController extends Controller
 {
     public function store(Request $request, Company $company, Campaign $campaign)
     {
-        foreach ($request->input('items') as $requested) {
-            $item = Item::find(1);
-
-            $item->assignments()->create([
+        foreach ($request->input('items') as $item) {
+            Assignment::create([
+                'item_id' => $item['id'],
                 'assigned_by' => $request->user()->id,
                 'assigned_to' => $request->input('assigned_to'),
-                'quantity' => $requested['quantity'],
+                'quantity' => $item['requested_quantity'],
             ]);
 
 
@@ -37,5 +37,10 @@ class AssignmentController extends Controller
         }
 
         return;
+    }
+
+    public function update(Request $request, Assignment $assignment)
+    {
+        $assignment->update(['returned_at' => Carbon::now()]);
     }
 }
